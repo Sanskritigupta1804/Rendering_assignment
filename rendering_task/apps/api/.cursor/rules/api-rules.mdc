@@ -1,0 +1,260 @@
+---
+description: This is a Node.js API built with Hono, TypeScript, Drizzle ORM, and PostgreSQL. The project follows a monorepo structure and is deployed on Vercel.
+alwaysApply: false
+---
+# Cursor.mdc - API Project Rules & Guidelines
+
+## Project Overview
+This is a Node.js API built with Hono, TypeScript, Drizzle ORM, and PostgreSQL. The project follows a monorepo structure and is deployed on Vercel.
+
+## Architecture & Structure
+
+### File Organization
+- **`src/`** - Main source code directory
+  - **`app.ts`** - Main application setup and route registration
+  - **`index.ts`** - Server entry point
+  - **`env.ts`** - Environment configuration and validation
+  - **`db/`** - Database schema, migrations, and seeding
+  - **`routes/`** - API route definitions and handlers
+  - **`lib/`** - Utility functions and shared code
+  - **`middlewares/`** - Custom middleware functions
+
+### Route Structure
+- Routes are organized by feature (e.g., `concerts/`)
+- Each route module contains:
+  - `*.routes.ts` - OpenAPI route definitions with Zod schemas
+  - `*.handlers.ts` - Business logic implementation
+  - `*.index.ts` - Route registration and exports
+
+## Coding Standards
+
+### TypeScript
+- Use strict TypeScript configuration
+- Prefer `const` over `let` when possible
+- Use type inference when types are obvious
+- Export types from `app.ts` for external consumption
+- Use `@/*` path alias for imports from `src/`
+
+### Naming Conventions
+- **Files**: kebab-case (e.g., `concerts.routes.ts`)
+- **Variables/Functions**: camelCase (e.g., `selectConcertsSchema`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `DATABASE_URL`)
+- **Types/Interfaces**: PascalCase (e.g., `AppType`)
+- **Database tables**: camelCase (e.g., `concerts`)
+
+### Import/Export Patterns
+```typescript
+// Prefer named exports
+export const functionName = () => {};
+
+// Use default export only for main modules
+export default app;
+
+// Group imports by type
+import { createRoute, z } from "@hono/zod-openapi";
+import * as HttpStatusCodes from "stoker/http-status-codes";
+
+import { insertConcertsSchema } from "@/db/schemas";
+import { createErrorSchema } from "@/lib/constants";
+```
+
+## Database & Schema
+
+### Drizzle ORM Best Practices
+- Use `pgTable` for PostgreSQL tables
+- Define schemas with proper constraints and defaults
+- Use `createSelectSchema` and `createInsertSchema` from drizzle-zod
+- Implement proper validation with Zod schemas
+- Use `serial` for auto-incrementing primary keys
+- Set appropriate field lengths for varchar fields
+
+### Schema Definition Pattern
+```typescript
+export const tableName = pgTable("table_name", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  date: timestamp("date", { withTimezone: false }).defaultNow(),
+});
+
+// Generate Zod schemas
+export const selectSchema = toZodV4SchemaTyped(createSelectSchema(tableName));
+export const insertSchema = toZodV4SchemaTyped(
+  createInsertSchema(tableName).omit({ id: true })
+);
+export const patchSchema = toZodV4SchemaTyped(
+  createInsertSchema(tableName).omit({ id: true }).partial()
+);
+```
+
+## API Design
+
+### OpenAPI & Zod Integration
+- Use `@hono/zod-openapi` for route definitions
+- Define comprehensive request/response schemas
+- Include proper HTTP status codes from `stoker/http-status-codes`
+- Use `jsonContent` and `jsonContentRequired` helpers
+- Implement proper error handling with error schemas
+
+### Route Definition Pattern
+```typescript
+export const routeName = createRoute({
+  path: "/resource",
+  method: "get",
+  tags: ["Resource"],
+  request: {
+    query: z.object({
+      page: z.coerce.number().default(1),
+      limit: z.coerce.number().default(10),
+    }),
+    params: IdParamsSchema, // for path parameters
+    body: jsonContentRequired(schema, "description"),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(schema, "Success description"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Not found"),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(schema), "Validation error"
+    ),
+  },
+});
+```
+
+### Error Handling
+- Use consistent error schemas across all endpoints
+- Implement proper HTTP status codes
+- Provide meaningful error messages
+- Use `createErrorSchema` for validation errors
+
+## Environment & Configuration
+
+### Environment Variables
+- Use `@/env` for centralized environment configuration
+- Validate environment variables with Zod
+- Never commit sensitive values to version control
+- Use `.env.local` for local development
+
+### Database Configuration
+- Use `DATABASE_URL` for database connection
+- Configure Drizzle with proper PostgreSQL dialect
+- Set appropriate casing (camelCase for this project)
+- Configure migration output directory
+
+## Testing & Quality
+
+### Testing Standards
+- Use Vitest for unit and integration tests
+- Test both success and error scenarios
+- Mock external dependencies appropriately
+- Maintain good test coverage
+
+### Code Quality
+- Use ESLint with `@antfu/eslint-config`
+- Run `npm run lint` before committing
+- Use `npm run typecheck` to verify TypeScript
+- Follow consistent formatting rules
+
+## Development Workflow
+
+### Scripts
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run typecheck` - TypeScript type checking
+- `npm run lint` - ESLint checking
+- `npm run test` - Run test suite
+
+### Database Operations
+- `npm run db:generate` - Generate new migrations
+- `npm run db:migrate` - Apply migrations
+- `npm run db:studio` - Open Drizzle Studio
+- `npm run db:seed` - Seed database with test data
+
+## Deployment
+
+### Vercel Deployment
+- Build output goes to `./dist` directory
+- Ensure `dist/` is in `.gitignore`
+- Use `npm run build` in build step
+- Environment variables must be configured in Vercel dashboard
+
+### Production Considerations
+- Use proper logging with Pino
+- Implement CORS appropriately
+- Set up proper error monitoring
+- Configure database connection pooling
+
+## Security Best Practices
+
+### Input Validation
+- Always validate input with Zod schemas
+- Use `z.coerce` for type conversion when appropriate
+- Implement proper sanitization for user inputs
+- Use parameterized queries (handled by Drizzle)
+
+### Authentication & Authorization
+- Implement proper authentication middleware
+- Use environment variables for secrets
+- Implement rate limiting where appropriate
+- Validate user permissions on protected routes
+
+## Performance & Optimization
+
+### Database Queries
+- Use proper indexing strategies
+- Implement pagination for list endpoints
+- Use `select()` to limit returned fields
+- Implement proper connection pooling
+
+### API Performance
+- Use appropriate HTTP status codes
+- Implement caching where beneficial
+- Use compression middleware
+- Monitor response times and optimize slow queries
+
+## Documentation
+
+### Code Documentation
+- Use JSDoc for complex functions
+- Document API endpoints with OpenAPI
+- Include examples in route documentation
+- Maintain up-to-date README files
+
+### API Documentation
+- Use Scalar API Reference for interactive docs
+- Document all request/response schemas
+- Include error response examples
+- Provide usage examples for complex endpoints
+
+## Troubleshooting
+
+### Common Issues
+- Ensure environment variables are properly set
+- Check database connection string format
+- Verify TypeScript compilation before deployment
+- Check for missing dependencies in package.json
+
+### Debugging
+- Use Pino logger for structured logging
+- Enable debug mode in development
+- Check Vercel function logs for deployment issues
+- Use Drizzle Studio for database inspection
+
+## Contributing
+
+### Code Review Checklist
+- [ ] TypeScript compilation passes
+- [ ] ESLint rules are satisfied
+- [ ] Tests pass
+- [ ] Database migrations are properly tested
+- [ ] API documentation is updated
+- [ ] Environment variables are documented
+
+### Pull Request Process
+1. Create feature branch from main
+2. Implement changes following these guidelines
+3. Add/update tests as needed
+4. Update documentation
+5. Submit PR with clear description
+6. Ensure CI checks pass
+7. Get code review approval
+8. Merge to main branch

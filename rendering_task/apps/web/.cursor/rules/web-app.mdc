@@ -1,0 +1,218 @@
+---
+description: Next.js Production Rules for turbo-concert
+alwaysApply: false
+---
+# Next.js Production Rules for turbo-concert
+
+## General
+- Use **TypeScript** everywhere with strict mode enabled (`"strict": true` in `tsconfig.json`).
+- New files must be `.ts` or `.tsx`.
+- Add **JSDoc comments** for all functions, components, and complex types.
+- Use named export patterns for all functions.
+- This is a **monorepo** using **Turborepo** - respect workspace dependencies.
+
+## Architecture
+- Use **App Router** (`app/`) for pages, layouts, and API routes.
+- Organize code in **feature-based structure**:
+
+```
+app/ # Routes, layouts, metadata
+components/ # Shared UI components  
+lib/ # Utilities, helpers, API client
+hooks/ # Custom React hooks
+```
+
+- **Shared UI components** are in `@workspace/ui` package - import from there.
+- **API types** are auto-generated from OpenAPI specs in `lib/client/types.ts`.
+
+## Next.js Usage
+- Default to **Server Components**.
+- Use `use client` only if:
+  - State or effects are needed
+  - Browser APIs are required
+- Use **Route Handlers** (`app/api/`) instead of `pages/api`.
+- Use the **Metadata API** for SEO, not `next/head`.
+- **Turbopack** is enabled for development (`next dev --turbopack`).
+
+## Styling
+- Use **Tailwind CSS v4** (latest version with CSS-first approach).
+- Use **shadcn/ui** components from `@workspace/ui` package.
+- Use **Radix UI** primitives for accessible components.
+- **Google Fonts** (Geist, Geist Mono) are configured in layout.
+- No inline styles except for computed dynamic values.
+- CSS imports from `@workspace/ui/styles/globals.css`.
+
+## Dependencies & Imports
+- **UI Components**: Import from `@workspace/ui/components/*`
+- **Utilities**: Import from `@workspace/ui/lib/*`
+- **Icons**: Use `lucide-react` for consistent iconography
+- **Theme**: Use `next-themes` for dark/light mode support
+- **Validation**: Use **Zod** for all API input validation
+- **API Client**: Use `openapi-fetch` with generated types
+
+## Security
+- Keep secrets in `.env.local`.
+- Only prefix with `NEXT_PUBLIC_` if explicitly safe for client.
+- Validate all API inputs with **Zod**.
+- API types are auto-generated from OpenAPI specs.
+
+## Performance
+- Use `next/image` for images.
+- Use `next/script` for third-party scripts (with `lazyOnload`/`defer`).
+- **Turbopack** provides fast refresh and bundling.
+- API types are generated at build time via `npm run api:codegen`.
+
+## Code Quality
+- **ESLint** configuration extends from `@workspace/eslint-config/next-js`.
+- **TypeScript** configuration extends from `@workspace/typescript-config/nextjs.json`.
+- Use **strict TypeScript** with `noImplicitAny`, `strictNullChecks`, `noUncheckedIndexedAccess`.
+- Keep imports clean and sorted.
+- Run `npm run typecheck` for type validation.
+
+## Testing
+- **Type checking**: `npm run typecheck` (TypeScript validation)
+- **Linting**: `npm run lint` and `npm run lint:fix`
+- **API codegen**: `npm run api:codegen` (generates types from OpenAPI)
+
+## State Management
+- **Server state**: Use **TanStack Query** with generated API client.
+- **Local state**: **Zustand** (when needed) or React hooks (`useState`, `useReducer`).
+- **Theme**: Use `next-themes` for dark/light mode.
+- **Validation**: Use **Zod** for all data validation and type safety.
+
+## Build & Development
+- **Prebuild**: Runs `npm run api:codegen` to generate API types.
+- **Development**: Uses Turbopack for faster builds.
+- **Monorepo**: Respects workspace dependencies and build order.
+- **Outputs**: `.next/**`, `dist/**`, generated API types.
+
+## Commits & PRs
+- Follow **Conventional Commits**:
+  - `feat: add login page`
+  - `fix: resolve hydration error`
+  - `chore: update dependencies`
+- Keep PRs **feature-scoped** and small.
+
+## Cursor Usage
+- Generate code with **types & prop interfaces**.
+- Prefer modular functions/components over large files.
+- Use **clear docstrings & comments** so AI can leverage context.
+- Always validate API/data models with **Zod**.
+- Import UI components from `@workspace/ui` package.
+- Respect the monorepo structure and workspace dependencies.
+- To add shadcn-ui components to the UI package:
+  ```bash
+  cd packages/ui
+  pnpm dlx shadcn-ui@latest add [COMPONENT_NAME]
+  ```  
+
+- Import UI components from `@workspace/ui` package.
+- Respect the monorepo structure and workspace dependencies.  
+- Always validate API/data models with **Zod**.  
+# Next.js Production Rules for turbo-concert
+
+## General
+- Use **TypeScript** everywhere with strict mode enabled (`"strict": true` in `tsconfig.json`).
+- New files must be `.ts` or `.tsx`.
+- Add **JSDoc comments** for all functions, components, and complex types.
+- Use named export patterns for all functions.
+- This is a **monorepo** using **Turborepo** - respect workspace dependencies.
+
+## Architecture
+- Use **App Router** (`app/`) for pages, layouts, and API routes.
+- Organize code in **feature-based structure**:
+
+```
+app/ # Routes, layouts, metadata
+components/ # Shared UI components  
+lib/ # Utilities, helpers, API client
+hooks/ # Custom React hooks
+```
+
+- **Shared UI components** are in `@workspace/ui` package - import from there.
+- **API types** are auto-generated from OpenAPI specs in `lib/client/types.ts`.
+
+## Next.js Usage
+- Default to **Server Components**.
+- Use `use client` only if:
+  - State or effects are needed
+  - Browser APIs are required
+- Use **Route Handlers** (`app/api/`) instead of `pages/api`.
+- Use the **Metadata API** for SEO, not `next/head`.
+- **Turbopack** is enabled for development (`next dev --turbopack`).
+
+## Styling
+- Use **Tailwind CSS v4** (latest version with CSS-first approach).
+- Use **shadcn/ui** components from `@workspace/ui` package.
+- Use **Radix UI** primitives for accessible components.
+- **Google Fonts** (Geist, Geist Mono) are configured in layout.
+- No inline styles except for computed dynamic values.
+- CSS imports from `@workspace/ui/styles/globals.css`.
+
+## Dependencies & Imports
+- **UI Components**: Import from `@workspace/ui/components/*`
+- **Utilities**: Import from `@workspace/ui/lib/*`
+- **Icons**: Use `lucide-react` for consistent iconography
+- **Theme**: Use `next-themes` for dark/light mode support
+- **Validation**: Use **Zod** for all API input validation
+- **API Client**: Use `openapi-fetch` with generated types
+
+## Security
+- Keep secrets in `.env.local`.
+- Only prefix with `NEXT_PUBLIC_` if explicitly safe for client.
+- Validate all API inputs with **Zod**.
+- API types are auto-generated from OpenAPI specs.
+
+## Performance
+- Use `next/image` for images.
+- Use `next/script` for third-party scripts (with `lazyOnload`/`defer`).
+- **Turbopack** provides fast refresh and bundling.
+- API types are generated at build time via `npm run api:codegen`.
+
+## Code Quality
+- **ESLint** configuration extends from `@workspace/eslint-config/next-js`.
+- **TypeScript** configuration extends from `@workspace/typescript-config/nextjs.json`.
+- Use **strict TypeScript** with `noImplicitAny`, `strictNullChecks`, `noUncheckedIndexedAccess`.
+- Keep imports clean and sorted.
+- Run `npm run typecheck` for type validation.
+
+## Testing
+- **Type checking**: `npm run typecheck` (TypeScript validation)
+- **Linting**: `npm run lint` and `npm run lint:fix`
+- **API codegen**: `npm run api:codegen` (generates types from OpenAPI)
+
+## State Management
+- **Server state**: Use **TanStack Query** with generated API client.
+- **Local state**: **Zustand** (when needed) or React hooks (`useState`, `useReducer`).
+- **Theme**: Use `next-themes` for dark/light mode.
+- **Validation**: Use **Zod** for all data validation and type safety.
+
+## Build & Development
+- **Prebuild**: Runs `npm run api:codegen` to generate API types.
+- **Development**: Uses Turbopack for faster builds.
+- **Monorepo**: Respects workspace dependencies and build order.
+- **Outputs**: `.next/**`, `dist/**`, generated API types.
+
+## Commits & PRs
+- Follow **Conventional Commits**:
+  - `feat: add login page`
+  - `fix: resolve hydration error`
+  - `chore: update dependencies`
+- Keep PRs **feature-scoped** and small.
+
+## Cursor Usage
+- Generate code with **types & prop interfaces**.
+- Prefer modular functions/components over large files.
+- Use **clear docstrings & comments** so AI can leverage context.
+- Always validate API/data models with **Zod**.
+- Import UI components from `@workspace/ui` package.
+- Respect the monorepo structure and workspace dependencies.
+- To add shadcn-ui components to the UI package:
+  ```bash
+  cd packages/ui
+  pnpm dlx shadcn@latest add [COMPONENT_NAME]
+  ```  
+
+- Import UI components from `@workspace/ui` package.
+- Respect the monorepo structure and workspace dependencies.  
+- Always validate API/data models with **Zod**.  
